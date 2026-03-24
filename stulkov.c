@@ -71,6 +71,7 @@ int peek(stack *s)
 
 int main()
 {
+    printf("test");
     stack s;
     init(&s);
     
