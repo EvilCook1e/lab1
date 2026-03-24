@@ -4,7 +4,7 @@
 #include <ctype.h>
 #include <windows.h>
 #include <locale.h>
-
+// Веса римских символов
 int weight(char c)
 {
     switch (c) 
@@ -20,6 +20,7 @@ int weight(char c)
     }
 }
 
+// Проверка римского числа
 int is_valid_roman(const char* roman)
 {
     int len = strlen(roman);
@@ -31,21 +32,24 @@ int is_valid_roman(const char* roman)
         if (!strchr("MDCLXVI", c)) return 0;
     }
 
+    // Создаем строку в верхнем регистре для проверок
     char upper[100];
     strcpy(upper, roman);
     for (int i = 0; i < len; i++) {
         upper[i] = toupper(upper[i]);
     }
 
+    //Проверка на повторение символов V, L, D
     for (int i = 0; i < len - 1; i++)
     {
         if ((upper[i] == 'V' || upper[i] == 'L' || upper[i] == 'D') &&
             upper[i] == upper[i + 1])
         {
-            return 0;
+            return 0; // Найдено VV, LL или DD
         }
     }
 
+    //Проверка на более чем 3 одинаковых символа I, X, C, M подряд
     for (int i = 0; i < len - 3; i++) 
     {
         if ((upper[i] == 'I' || upper[i] == 'X' ||
@@ -58,6 +62,7 @@ int is_valid_roman(const char* roman)
         }
     }
 
+    //Проверка правил вычитания
     const char* valid_subtractions[] = { "IV", "IX", "XL", "XC", "CD", "CM" };
     int was_subtraction = 0; // флаг
 
@@ -68,6 +73,7 @@ int is_valid_roman(const char* roman)
             char pair[3] = { upper[i], upper[i + 1], '\0' };
             int valid = 0; //флаг
 
+            // Проверяем, является ли комбинация разрешенным вычитанием
             for (int j = 0; j < 6; j++)
             {
                 if (strcmp(pair, valid_subtractions[j]) == 0)
@@ -88,7 +94,7 @@ int is_valid_roman(const char* roman)
 
     return 1;
 }
-
+//Развернуть римское число (без вычитания)
 char* expand_roman(const char* roman) 
 {
     char* expanded = (char*)malloc(1000 * sizeof(char));
@@ -141,6 +147,7 @@ char* expand_roman(const char* roman)
     return expanded;
 }
 
+// Сортировка символов по убыванию веса
 void sort_roman(char* str)
 {
     int len = strlen(str);
@@ -157,7 +164,7 @@ void sort_roman(char* str)
         }
     }
 }
-
+//Проверка переполнения MMMCMXCIX (3999)
 int check_overflow(const char* roman) {
     int consecutive_m = 0;
     int max_consecutive_m = 0;
@@ -173,7 +180,7 @@ int check_overflow(const char* roman) {
     }
     return max_consecutive_m <= 3;
 }
-
+// Свертка развернутой строки в корректную римскую запись
 char* compress_roman(char* expanded)
 {
     char* result = (char*)malloc(1000 * sizeof(char));
@@ -219,6 +226,7 @@ char* compress_roman(char* expanded)
     return result;
 }
 
+// Главная функция
 int main()
 {
     SetConsoleOutputCP(65001);
@@ -229,16 +237,19 @@ int main()
     printf("Введите второе римское число: ");
     scanf("%99s", roman2);
 
+    // Проверка корректности первого числа
     if (!is_valid_roman(roman1)) {
         printf("Ошибка: некорректное римское число '%s'\n", roman1);
         return 1;
     }
 
+    // Проверка корректности второго числа
     if (!is_valid_roman(roman2)) {
         printf("Ошибка: некорректное римское число '%s'\n", roman2);
         return 1;
     }
 
+    // Проверка на переполнение для каждого числа
     if (!check_overflow(roman1)) {
         printf("Ошибка: число '%s' превышает 3999\n", roman1);
         return 1;
@@ -249,17 +260,22 @@ int main()
         return 1;
     }
 
+    // Развертывание
     char* expanded1 = expand_roman(roman1);
     char* expanded2 = expand_roman(roman2);
 
+    // Объединение
     char combined[2000];
     strcpy(combined, expanded1);
     strcat(combined, expanded2);
 
+    // Сортировка
     sort_roman(combined);
 
+    // Свертка
     char* result = compress_roman(combined);
 
+    // Проверка результата на переполнение
     if (!check_overflow(result)) {
         printf("Ошибка: сумма '%s' + '%s' превышает 3999\n", roman1, roman2);
         free(expanded1);
@@ -268,8 +284,10 @@ int main()
         return 1;
     }
 
+    // Вывод результата
     printf("Результат: %s + %s = %s\n", roman1, roman2, result);
 
+    // Освобождение памяти
     free(expanded1);
     free(expanded2);
     free(result);
